@@ -1,3 +1,8 @@
+require('dotenv').config();
+
+const accessToken = process.env.ACCESS_TOKEN;
+// console.log(accessToken);  // Prints your access token
+
 const express = require('express');
 const app = express();
 const port = 3000;
