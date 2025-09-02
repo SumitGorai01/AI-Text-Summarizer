@@ -1,35 +1,33 @@
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const summarizeText = require('./summarize.js');
+require("dotenv").config();
+const express = require("express");
+const path = require("path");
+const summarizeText = require("./summarize.js");
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ✅ Serve index.html on root (important for Vercel)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Serve index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// API route
-app.post('/summarize', (req, res) => {
-  const text = req.body.text_to_summarize;
+// Summarize endpoint
+app.post("/summarize", async (req, res) => {
+  const { text_to_summarize, params } = req.body;
 
-  summarizeText(text)
-    .then(response => res.send(response))
-    .catch(error => {
-      console.error(error.message);
-      res.status(500).send('Error summarizing text');
-    });
+  try {
+    const summary = await summarizeText(text_to_summarize, params);
+    res.send(summary);
+  } catch (err) {
+    res.status(500).send("Error summarizing text: " + err.message);
+  }
 });
 
 // Export for Vercel
 module.exports = app;
 
-// Localhost run
+// Local development
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
