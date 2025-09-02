@@ -29,7 +29,13 @@ app.post('/summarize', (req, res) => {
       console.log(error.message);
     });
 });
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
-});
+// ✅ For Vercel: export app (so vercel.json can use it)
+module.exports = app;
+
+// ✅ For localhost: only start server if not running on Vercel
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
