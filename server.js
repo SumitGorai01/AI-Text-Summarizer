@@ -1,38 +1,35 @@
 require('dotenv').config();
-
-const accessToken = process.env.ACCESS_TOKEN;
-// console.log(accessToken);  // Prints your access token
-
 const express = require('express');
-const app = express();
-const port = 3000;
+const path = require('path');
 const summarizeText = require('./summarize.js');
 
-// Parses JSON bodies (as sent by API clients)
+const app = express();
 app.use(express.json());
 
-// Serves static files from the 'public' directory
-app.use(express.static('public'));
+// ✅ Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Handle POST requests to the '/summarize' endpoint
+// ✅ Serve index.html on root (important for Vercel)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
+// API route
 app.post('/summarize', (req, res) => {
- // get the text_to_summarize property from the request body
   const text = req.body.text_to_summarize;
 
- // call your summarizeText function, passing in the text from the request
-  summarizeText(text) 
-    .then(response => {
-       res.send(response); // Send the summary text as a response to the client
-    })
+  summarizeText(text)
+    .then(response => res.send(response))
     .catch(error => {
-      console.log(error.message);
+      console.error(error.message);
+      res.status(500).send('Error summarizing text');
     });
 });
-// ✅ For Vercel: export app (so vercel.json can use it)
+
+// Export for Vercel
 module.exports = app;
 
-// ✅ For localhost: only start server if not running on Vercel
+// Localhost run
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
